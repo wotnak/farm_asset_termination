@@ -1,0 +1,8 @@
+name: farmOS Asset Termination
+description: Adds the ability to mark any log as terminating referenced assets.
+type: module
+package: farmOS Contrib
+core_version_requirement: ^9 || ^10
+dependencies:
+  - farm:asset
+  - farm:farm_log

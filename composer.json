@@ -1,0 +1,7 @@
+{
+    "name": "drupal/farm_asset_termination",
+    "description": "Adds the ability to mark any log as terminating referenced assets.",
+    "type": "drupal-module",
+    "homepage": "https://www.drupal.org/project/farm_asset_termination",
+    "license": "GPL-2.0-or-later"
+}
