@@ -6,6 +6,7 @@ namespace Drupal\farm_asset_termination\EventSubscriber;
 
 use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
+use Drupal\farm_asset_termination\AssetTerminationInterface;
 use Drupal\log\Event\LogEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -27,15 +28,19 @@ class LogEventSubscriber implements EventSubscriberInterface {
   protected CacheTagsInvalidatorInterface $cacheTagsInvalidator;
 
   /**
-   * LogEventSubscriber Constructor.
-   *
-   * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cache_tags_invalidator
-   *   Cache tag invalidator service.
+   * The Asset Termination service.
+   */
+  protected AssetTerminationInterface $assetTermination;
+
+  /**
+   * Constructs a LogEventSubscriber object.
    */
   public function __construct(
-    CacheTagsInvalidatorInterface $cache_tags_invalidator
+    CacheTagsInvalidatorInterface $cache_tags_invalidator,
+    AssetTerminationInterface $asset_termination,
   ) {
     $this->cacheTagsInvalidator = $cache_tags_invalidator;
+    $this->assetTermination = $asset_termination;
   }
 
   /**
@@ -56,17 +61,20 @@ class LogEventSubscriber implements EventSubscriberInterface {
     $log = $event->log;
 
     // If log is not yet completed we heave nothing to do.
-    if ($log->get('status')->getValue() !== 'done') {
+    if ($log->get('status')->getString() !== 'done') {
       return;
     }
 
     // If log is not marked as termination we have nothing to do.
     if (
       $log->get('is_termination')->isEmpty()
-      || !boolval($log->get('is_termination')->getValue()[0]['value'])
+      || !boolval($log->get('is_termination')->getString())
     ) {
       return;
     }
+
+    // Assign 'Termination' log category.
+    $this->assetTermination->assignTerminationCategory($log, save: FALSE);
 
     // Get assets field from the log.
     $assetsField = $log->get(self::LOG_FIELD_ASSET);

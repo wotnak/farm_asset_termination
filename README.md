@@ -9,6 +9,9 @@ Logs marked as termination will on completion mark referenced assets as
 terminated and archive them. A terminated asset page will display
 the termination time linked to the log that terminated the asset.
 
+Additionally all termination logs will have assigned 'Termination' log category
+for easier log filtering.
+
 ## Installation
 
 Install as you would normally install a contributed drupal module. See:

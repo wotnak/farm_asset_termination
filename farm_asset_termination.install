@@ -1,0 +1,43 @@
+<?php
+
+/**
+ * @file
+ * FarmOS Asset Termination update hooks.
+ */
+
+declare(strict_types=1);
+
+/**
+ * Implements hook_install().
+ */
+function farm_asset_termination_install(): void {
+  farm_asset_termination_update_9001();
+  farm_asset_termination_update_9002();
+}
+
+/**
+ * Assign 'Termination' log category to existing termination logs.
+ */
+function farm_asset_termination_update_9001(): void {
+  $terminationLogs = \Drupal::service('farm_asset_termination.asset_termination')->getTerminationLogs();
+  \Drupal::service('farm_asset_termination.asset_termination')->assignTerminationCategory($terminationLogs);
+}
+
+/**
+ * Mark existing logs with 'Termination' category as termination.
+ */
+function farm_asset_termination_update_9002(): void {
+  // Try to find logs tagged with 'Termination' category.
+  $terminationCategoryId = \Drupal::service('farm_asset_termination.asset_termination')->getTerminationLogCategory()->id();
+  $query = \Drupal::entityTypeManager()->getStorage('log')->getQuery();
+  $query->condition('category', $terminationCategoryId);
+  $logsIds = $query->execute();
+  if (!is_array($logsIds) || empty($logsIds)) {
+    return;
+  }
+
+  // Mark found logs as terminating referenced assets.
+  /** @var \Drupal\log\Entity\LogInterface[] */
+  $logs = \Drupal::entityTypeManager()->getStorage('log')->loadMultiple($logsIds);
+  \Drupal::service('farm_asset_termination.asset_termination')->markLogsAsTermination($logs);
+}
