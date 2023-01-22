@@ -26,7 +26,6 @@ class AssetTerminationItemList extends EntityReferenceFieldItemList {
     $query = \Drupal::service('farm.log_query')->getQuery([
       'asset' => $entity,
       'timestamp' => time(),
-      'limit' => 1,
       'status' => 'done',
     ]);
     $query->condition('is_termination', TRUE);
@@ -34,7 +33,7 @@ class AssetTerminationItemList extends EntityReferenceFieldItemList {
     if (!is_array($logIds) || empty($logIds)) {
       return;
     }
-    $terminationLogId = reset($logIds);
+    $terminationLogId = end($logIds);
 
     // Assign termination log reference as field value.
     $this->list[0] = $this->createItem(0, ['target_id' => $terminationLogId]);
