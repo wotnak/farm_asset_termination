@@ -8,14 +8,6 @@
 declare(strict_types=1);
 
 /**
- * Implements hook_install().
- */
-function farm_asset_termination_install(): void {
-  farm_asset_termination_update_9001();
-  farm_asset_termination_update_9002();
-}
-
-/**
  * Assign 'Termination' log category to existing termination logs.
  */
 function farm_asset_termination_update_9001(): void {
