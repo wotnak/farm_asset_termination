@@ -36,11 +36,11 @@ class LogEventSubscriber implements EventSubscriberInterface {
    * Constructs a LogEventSubscriber object.
    */
   public function __construct(
-    CacheTagsInvalidatorInterface $cache_tags_invalidator,
-    AssetTerminationInterface $asset_termination,
+    CacheTagsInvalidatorInterface $cacheTagsInvalidator,
+    AssetTerminationInterface $assetTermination,
   ) {
-    $this->cacheTagsInvalidator = $cache_tags_invalidator;
-    $this->assetTermination = $asset_termination;
+    $this->cacheTagsInvalidator = $cacheTagsInvalidator;
+    $this->assetTermination = $assetTermination;
   }
 
   /**

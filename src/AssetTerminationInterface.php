@@ -28,7 +28,7 @@ interface AssetTerminationInterface {
    *
    * @param \Drupal\log\Entity\LogInterface[]|\Drupal\log\Entity\LogInterface $logs
    *   Log entity or array of them that should have assigned 'Termination' log category.
-   * @param boolean $save
+   * @param bool $save
    *   Determines if termination category assignment should be immediately saved
    *   to the database. When using it in log entity presave event subscriber
    *   should be set to FALSE to not trigger infinite loop of presave events.

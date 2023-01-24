@@ -102,10 +102,7 @@ class AssetTermination implements AssetTerminationInterface {
   }
 
   /**
-   * Get all termination logs.
-   *
-   * @return \Drupal\log\Entity\LogInterface[]
-   *   Termination logs list.
+   * {@inheritdoc}
    */
   public function getTerminationLogs(): array {
     /** @var \Drupal\log\Entity\LogInterface[] */

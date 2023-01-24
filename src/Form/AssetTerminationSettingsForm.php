@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Drupal\farm_asset_termination\Form;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\farm_asset_termination\AssetTerminationInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * The config form for the farm_asset_termination module.
@@ -23,7 +23,7 @@ class AssetTerminationSettingsForm extends ConfigFormBase {
 
   /**
    * Constructs an AssetTerminationSettingsForm object.
-   * 
+   *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -83,7 +83,7 @@ class AssetTerminationSettingsForm extends ConfigFormBase {
       '#empty_value' => '',
     ];
 
-    // Default termination log types
+    // Default termination log types.
     $logTypes = $this->entityTypeManager->getStorage('log_type')->loadMultiple();
     $logTypesOptions = array_map(fn($logType) => $logType->label(), $logTypes);
     $form['default_termination_log_types'] = [

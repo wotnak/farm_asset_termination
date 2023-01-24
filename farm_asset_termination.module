@@ -16,15 +16,15 @@ use Drupal\log\Entity\LogInterface;
 /**
  * Implements hook_entity_base_field_info().
  */
-function farm_asset_termination_entity_base_field_info(EntityTypeInterface $entity_type): array {
+function farm_asset_termination_entity_base_field_info(EntityTypeInterface $entityType): array {
   $fields = [];
 
-  if ($entity_type->id() === 'asset') {
+  if ($entityType->id() === 'asset') {
     // Asset termination time.
     // This is computed based on an asset's logs marked as termination.
     $options = [
       'type' => 'entity_reference',
-      'label' => t('Terminated'),
+      'label' => \t('Terminated'),
       'computed' => AssetTerminationItemList::class,
       'target_type' => 'log',
       'multiple' => FALSE,
@@ -38,12 +38,12 @@ function farm_asset_termination_entity_base_field_info(EntityTypeInterface $enti
 
   }
 
-  if ($entity_type->id() === 'log') {
+  if ($entityType->id() === 'log') {
     // Is termination boolean field.
     $options = [
       'type' => 'boolean',
-      'label' => t('Is termination'),
-      'description' => t('If this log is a termination, then all assets referenced by it will be marked as terminated and archived at the time the log takes place. The log must be complete in order for the movement to take effect.'),
+      'label' => \t('Is termination'),
+      'description' => \t('If this log is a termination, then all assets referenced by it will be marked as terminated and archived at the time the log takes place. The log must be complete in order for the movement to take effect.'),
       'weight' => [
         'form' => 97,
       ],
@@ -67,8 +67,8 @@ function farm_asset_termination_entity_base_field_info(EntityTypeInterface $enti
 /**
  * By default check 'Is termination' field for log types configured as termination by default.
  */
-function farm_asset_termination_form_alter(array &$form, FormStateInterface $form_state): void {
-  $formObject = $form_state->getFormObject();
+function farm_asset_termination_form_alter(array &$form, FormStateInterface $formState): void {
+  $formObject = $formState->getFormObject();
   if (
     !$formObject instanceof EntityFormInterface
     || !$formObject->getEntity() instanceof LogInterface
