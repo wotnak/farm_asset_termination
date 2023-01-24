@@ -76,15 +76,19 @@ class AssetTerminationSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $formState): array {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $config = $this->config(AssetTerminationInterface::CONFIG_ID);
 
     // Termination category.
     $logCategories = $this->entityTypeManager->getStorage('taxonomy_term')->loadByProperties(['vid' => 'log_category']);
     $logCategoriesOptions = array_map(fn($category) => $category->label(), $logCategories);
+
     $form['category'] = [
-      '#type' => 'select',
+      '#type' => 'fieldset',
       '#title' => $this->t('Termination log category'),
+    ];
+    $form['category']['category'] = [
+      '#type' => 'select',
       '#description' => $this->t('Category used to mark termination logs. If left empty no category will be automatically assigned to termination logs.'),
       '#description_display' => 'before',
       '#options' => $logCategoriesOptions,
@@ -92,41 +96,46 @@ class AssetTerminationSettingsForm extends ConfigFormBase {
       '#required' => FALSE,
       '#empty_value' => '',
     ];
+    // Mark all logs with termination category as termination logs.
+    if (!empty($config->get('category'))) {
+      $form['category']['mark_existing_by_category'] = [
+        '#type' => 'submit',
+        '#value' => $this->t('Mark existing logs with termination category as termination logs'),
+        '#name' => 'mark_existing_by_category',
+      ];
+    }
 
     // Default termination log types.
     $logTypes = $this->entityTypeManager->getStorage('log_type')->loadMultiple();
     $logTypesOptions = array_map(fn($logType) => $logType->label(), $logTypes);
     $form['default_termination_log_types'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Default termination log types'),
+    ];
+    $form['default_termination_log_types']['default_termination_log_types'] = [
       '#type' => 'select',
       '#multiple' => TRUE,
-      '#title' => $this->t('Default termination log types'),
       '#description' => $this->t('Log types that will be marked as termination by default.'),
       '#description_display' => 'before',
       '#options' => $logTypesOptions,
       '#default_value' => $config->get('default_termination_log_types'),
     ];
-
-    // Mark all logs with termination category as termination logs.
-    $form['mark_as_termination'] = [
-      '#type' => 'fieldset',
-      '#title' => $this->t('Mark existing logs with termination category as termination logs'),
-      '#disabled' => empty($config->get('category')),
+    $form['default_termination_log_types']['enforce_default_termination_log_types'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Enforce default termination log types'),
+      '#description' => $this->t("By default, configuration of default log types only affects 'Is termination' field on the log creation form, it is checked by default, but can be manually unchecked. Selecting this option will force configured log types to always be marked as termination, without the option to manually change that on a per log basis."),
+      '#default_value' => $config->get('enforce_default_termination_log_types'),
     ];
-    if (empty($config->get('category'))) {
-      $form['mark_as_termination']['info'] = [
-        '#type' => 'markup',
-        '#markup' => $this->t('To mark existing logs with termination category as termination you need to first configure a termination category.'),
-      ];
-    }
-    else {
-      $form['mark_as_termination']['batch'] = [
+    // Mark all logs with termination category as termination logs.
+    if (!empty($config->get('default_termination_log_types'))) {
+      $form['default_termination_log_types']['mark_existing_by_type'] = [
         '#type' => 'submit',
-        '#value' => $this->t('Execute'),
-        '#name' => 'mark_as_termination',
+        '#value' => $this->t('Mark existing logs of default termination log types as termination'),
+        '#name' => 'mark_existing_by_type',
       ];
     }
 
-    return parent::buildForm($form, $formState);
+    return parent::buildForm($form, $form_state);
   }
 
   /**
@@ -136,12 +145,23 @@ class AssetTerminationSettingsForm extends ConfigFormBase {
     if (
       is_array($formState->getTriggeringElement())
       && isset($formState->getTriggeringElement()['#name'])
-      && $formState->getTriggeringElement()['#name'] === 'mark_as_termination'
+      && $formState->getTriggeringElement()['#name'] === 'mark_existing_by_category'
       && empty($formState->getValue('category'))
     ) {
       $formState->setErrorByName(
         'category',
         $this->t('To mark existing logs with termination category as termination you need to first configure a termination category.')
+      );
+    }
+    if (
+      is_array($formState->getTriggeringElement())
+      && isset($formState->getTriggeringElement()['#name'])
+      && $formState->getTriggeringElement()['#name'] === 'mark_existing_by_type'
+      && empty($formState->getValue('default_termination_log_types'))
+    ) {
+      $formState->setErrorByName(
+        'default_termination_log_types',
+        $this->t('To mark existing logs of default termination log types as termination you need to first configure default termination log types.')
       );
     }
   }
@@ -155,6 +175,7 @@ class AssetTerminationSettingsForm extends ConfigFormBase {
     $this->config(AssetTerminationInterface::CONFIG_ID)
       ->set('category', $formState->getValue('category'))
       ->set('default_termination_log_types', $formState->getValue('default_termination_log_types', []))
+      ->set('enforce_default_termination_log_types', boolval($formState->getValue('enforce_default_termination_log_types', FALSE)))
       ->save();
     parent::submitForm($form, $formState);
 
@@ -162,7 +183,7 @@ class AssetTerminationSettingsForm extends ConfigFormBase {
     if (
       is_array($formState->getTriggeringElement())
       && isset($formState->getTriggeringElement()['#name'])
-      && $formState->getTriggeringElement()['#name'] === 'mark_as_termination'
+      && $formState->getTriggeringElement()['#name'] === 'mark_existing_by_category'
     ) {
 
       $terminationCategory = $this->assetTermination->getTerminationLogCategory();
@@ -188,6 +209,42 @@ class AssetTerminationSettingsForm extends ConfigFormBase {
       ];
       $batch = [
         'title' => $this->t('Marking existing logs with termination category as termination logs...'),
+        'operations' => $operations,
+        'finished' => '_farm_asset_termination_mark_as_termination_finished',
+      ];
+      \batch_set($batch);
+    }
+
+    // Mark all logs with termination category as termination logs.
+    if (
+      is_array($formState->getTriggeringElement())
+      && isset($formState->getTriggeringElement()['#name'])
+      && $formState->getTriggeringElement()['#name'] === 'mark_existing_by_type'
+    ) {
+
+      $terminationLogTypes = $this->config(AssetTerminationInterface::CONFIG_ID)->get('default_termination_log_types');
+      if (empty($terminationLogTypes) || !is_array($terminationLogTypes)) {
+        return;
+      }
+
+      // Get logs with termination category.
+      $query = $this->entityTypeManager->getStorage('log')->getQuery();
+      $query->condition('type', $terminationLogTypes, 'IN');
+      $group = $query->orConditionGroup();
+      $group->condition(AssetTerminationInterface::TERMINATION_LOG_FIELD, NULL, 'IS NULL');
+      $group->condition(AssetTerminationInterface::TERMINATION_LOG_FIELD, FALSE);
+      $query->condition($group);
+      $logIds = $query->execute();
+      if (!is_array($logIds)) {
+        return;
+      }
+
+      $batches = array_chunk($logIds, 50);
+      $operations = [
+        ['_farm_asset_termination_mark_as_termination', $batches],
+      ];
+      $batch = [
+        'title' => $this->t('Marking existing logs of default termination log types as termination...'),
         'operations' => $operations,
         'finished' => '_farm_asset_termination_mark_as_termination_finished',
       ];

@@ -135,4 +135,11 @@ class AssetTermination implements AssetTerminationInterface {
     return in_array($logType, $defaultTerminationLogTypes);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function shouldEnforceDefaultTerminationLogTypes(): bool {
+    return boolval($this->config->get('enforce_default_termination_log_types'));
+  }
+
 }

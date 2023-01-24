@@ -72,14 +72,24 @@ function farm_asset_termination_form_alter(array &$form, FormStateInterface $for
   if (
     !$formObject instanceof EntityFormInterface
     || !$formObject->getEntity() instanceof LogInterface
-    || $formObject->getOperation() !== 'add'
     || !isset($form['is_termination'])
     || !\Drupal::service('farm_asset_termination.asset_termination')
       ->isDefaultTerminationLogType($formObject->getEntity()->bundle())
   ) {
     return;
   }
-  $form['is_termination']['widget']['value']['#default_value'] = TRUE;
+  $enforce = \Drupal::service('farm_asset_termination.asset_termination')->shouldEnforceDefaultTerminationLogTypes();
+  if ($formObject->getOperation() === 'add' || $enforce) {
+    $form['is_termination']['widget']['value']['#default_value'] = TRUE;
+  }
+  if ($enforce) {
+    $form['is_termination']['widget']['value']['#disabled'] = TRUE;
+    $log = $formObject->getEntity();
+    if ($log instanceof LogInterface) {
+      $label = $log->getBundleLabel();
+      $form['is_termination']['widget']['value']['#attributes']['title'] = \t('@type logs are marked as termination by default.', ['@type' => $label]);
+    }
+  }
 }
 
 /**

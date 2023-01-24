@@ -66,4 +66,9 @@ interface AssetTerminationInterface {
    */
   public function isDefaultTerminationLogType(LogTypeInterface|string $logType): bool;
 
+  /**
+   * Checks whether default termination lgo types enforcement was configured.
+   */
+  public function shouldEnforceDefaultTerminationLogTypes(): bool;
+
 }

@@ -12,8 +12,10 @@ the termination time linked to the log that terminated the asset.
 Optionally:
 
 - termination logs can be automatically marked with configured category,
-- configured asset types can by default be marked as termination,
+- configured log types can be by default marked as termination,
 - existing logs with configured termination category can be automatically marked
+  as termination,
+- existing logs of configured default termination log types can be automatically marked
   as termination.
 
 Additionally all termination logs will have assigned 'Termination' log category

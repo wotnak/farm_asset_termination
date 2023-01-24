@@ -1,2 +1,3 @@
 category: null
 default_termination_log_types: []
+enforce_default_termination_log_types: false

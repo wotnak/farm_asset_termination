@@ -11,3 +11,6 @@ farm_asset_termination.settings:
       sequence:
         type: string
         label: 'Log type id'
+    enforce_default_termination_log_types:
+      type: boolean
+      label: 'Enforce default termination log types'

@@ -60,10 +60,18 @@ class LogEventSubscriber implements EventSubscriberInterface {
     // Get the log entity from the event.
     $log = $event->log;
 
+    // Enforce default termination log types.
+    if (
+      $this->assetTermination->shouldEnforceDefaultTerminationLogTypes()
+      && $this->assetTermination->isDefaultTerminationLogType($log->bundle())
+    ) {
+      $log->set(AssetTerminationInterface::TERMINATION_LOG_FIELD, TRUE);
+    }
+
     // If log is not marked as termination we have nothing to do.
     if (
-      $log->get('is_termination')->isEmpty()
-      || !boolval($log->get('is_termination')->getString())
+      $log->get(AssetTerminationInterface::TERMINATION_LOG_FIELD)->isEmpty()
+      || !boolval($log->get(AssetTerminationInterface::TERMINATION_LOG_FIELD)->getString())
     ) {
       return;
     }
