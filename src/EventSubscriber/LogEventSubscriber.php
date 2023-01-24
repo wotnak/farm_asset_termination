@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Drupal\farm_asset_termination\EventSubscriber;
 
-use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\farm_asset_termination\AssetTerminationInterface;
+use Drupal\log\Entity\LogInterface;
 use Drupal\log\Event\LogEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -23,11 +23,6 @@ class LogEventSubscriber implements EventSubscriberInterface {
   const LOG_FIELD_ASSET = 'asset';
 
   /**
-   * Cache tag invalidator service.
-   */
-  protected CacheTagsInvalidatorInterface $cacheTagsInvalidator;
-
-  /**
    * The Asset Termination service.
    */
   protected AssetTerminationInterface $assetTermination;
@@ -36,10 +31,8 @@ class LogEventSubscriber implements EventSubscriberInterface {
    * Constructs a LogEventSubscriber object.
    */
   public function __construct(
-    CacheTagsInvalidatorInterface $cacheTagsInvalidator,
     AssetTerminationInterface $assetTermination,
   ) {
-    $this->cacheTagsInvalidator = $cacheTagsInvalidator;
     $this->assetTermination = $assetTermination;
   }
 
@@ -97,18 +90,26 @@ class LogEventSubscriber implements EventSubscriberInterface {
       return;
     }
 
-    // Archive assets referenced by termination log.
-    $tags = [];
-    /** @var \Drupal\asset\Entity\AssetInterface[] */
-    $terminatedAssets = $assetsField->referencedEntities();
-    foreach ($terminatedAssets as $asset) {
-      $asset->setArchivedTime(intval($log->get('timestamp')->getString()));
-      $asset->save();
-      array_push($tags, ...$asset->getCacheTags());
+    // Log was already marked as termination and completed nothing more to do.
+    if (
+      isset($log->original)
+      && $log->original instanceof LogInterface
+      && $log->original->get('status')->getString() === 'done'
+      && !$log->original->get(AssetTerminationInterface::TERMINATION_LOG_FIELD)->isEmpty()
+      && boolval($log->original->get(AssetTerminationInterface::TERMINATION_LOG_FIELD)->getString())
+    ) {
+      return;
     }
 
-    // Invalidate cache of terminated assets.
-    $this->cacheTagsInvalidator->invalidateTags($tags);
+    // Archive assets referenced by termination log.
+    if ($this->assetTermination->shouldArchiveAssetsOnTerminationLogCompletion()) {
+      /** @var \Drupal\asset\Entity\AssetInterface[] */
+      $terminatedAssets = $assetsField->referencedEntities();
+      foreach ($terminatedAssets as $asset) {
+        $asset->setArchivedTime(intval($log->get('timestamp')->getString()));
+        $asset->save();
+      }
+    }
 
   }
 

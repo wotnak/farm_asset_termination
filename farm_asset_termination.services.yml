@@ -6,6 +6,6 @@ services:
 
   farm_asset_termination.log_event_subscriber:
     class: Drupal\farm_asset_termination\EventSubscriber\LogEventSubscriber
-    arguments: ['@cache_tags.invalidator', '@farm_asset_termination.asset_termination']
+    arguments: ['@farm_asset_termination.asset_termination']
     tags:
       - { name: 'event_subscriber' }

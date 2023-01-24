@@ -79,6 +79,12 @@ class AssetTerminationSettingsForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state): array {
     $config = $this->config(AssetTerminationInterface::CONFIG_ID);
 
+    $form['archive_assets'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Archive assets on termination log completion'),
+      '#default_value' => $config->get('archive_assets') ?? TRUE,
+    ];
+
     // Termination category.
     $logCategories = $this->entityTypeManager->getStorage('taxonomy_term')->loadByProperties(['vid' => 'log_category']);
     $logCategoriesOptions = array_map(fn($category) => $category->label(), $logCategories);
@@ -176,6 +182,7 @@ class AssetTerminationSettingsForm extends ConfigFormBase {
       ->set('category', $formState->getValue('category'))
       ->set('default_termination_log_types', $formState->getValue('default_termination_log_types', []))
       ->set('enforce_default_termination_log_types', boolval($formState->getValue('enforce_default_termination_log_types', FALSE)))
+      ->set('archive_assets', boolval($formState->getValue('archive_assets', TRUE)))
       ->save();
     parent::submitForm($form, $formState);
 

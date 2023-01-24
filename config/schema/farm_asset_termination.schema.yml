@@ -14,3 +14,6 @@ farm_asset_termination.settings:
     enforce_default_termination_log_types:
       type: boolean
       label: 'Enforce default termination log types'
+    archive_assets:
+      type: boolean
+      label: 'Archive assets on termination log completion'

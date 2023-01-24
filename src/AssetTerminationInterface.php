@@ -71,4 +71,9 @@ interface AssetTerminationInterface {
    */
   public function shouldEnforceDefaultTerminationLogTypes(): bool;
 
+  /**
+   * Checks if assets should be archived on termination log completion.
+   */
+  public function shouldArchiveAssetsOnTerminationLogCompletion(): bool;
+
 }
