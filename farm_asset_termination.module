@@ -81,3 +81,29 @@ function farm_asset_termination_form_alter(array &$form, FormStateInterface $for
   }
   $form['is_termination']['widget']['value']['#default_value'] = TRUE;
 }
+
+/**
+ * Implements callback_batch_operation().
+ */
+function _farm_asset_termination_mark_as_termination(array $logIds, &$context = NULL): void {
+  $logs = \Drupal::entityTypeManager()->getStorage('log')->loadMultiple($logIds);
+  $results = \Drupal::service('farm_asset_termination.asset_termination')->markLogsAsTermination($logs);
+  $context['message'] = \t('Marking logs as termination...');
+  $context['results'] = $results;
+}
+
+/**
+ * Implements callback_batch_finished().
+ */
+function _farm_asset_termination_mark_as_termination_finished(bool $success, array $results): void {
+  if ($success) {
+    $message = \Drupal::translation()->formatPlural(
+      count($results),
+      'One log was marked as termination.', '@count logs were marked as termination.'
+    );
+  }
+  else {
+    $message = \t('There were errors during marking logs as termination.');
+  }
+  \Drupal::messenger()->addStatus($message);
+}

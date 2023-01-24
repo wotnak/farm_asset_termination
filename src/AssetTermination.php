@@ -90,15 +90,18 @@ class AssetTermination implements AssetTerminationInterface {
   /**
    * {@inheritdoc}
    */
-  public function markLogsAsTermination(array|LogInterface $logs): void {
+  public function markLogsAsTermination(array|LogInterface $logs): array {
+    $results = [];
     if (!is_array($logs)) {
       $logs = [$logs];
     }
 
     foreach ($logs as $log) {
       $log->set(self::TERMINATION_LOG_FIELD, TRUE);
-      $log->save();
+      $results[] = $log->save();
     }
+
+    return $results;
   }
 
   /**

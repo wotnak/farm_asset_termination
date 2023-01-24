@@ -46,7 +46,7 @@ interface AssetTerminationInterface {
    * @param \Drupal\log\Entity\LogInterface[]|\Drupal\log\Entity\LogInterface $logs
    *   Log entity or array of them that should be marked as terminating assigned assets.
    */
-  public function markLogsAsTermination(array|LogInterface $logs): void;
+  public function markLogsAsTermination(array|LogInterface $logs): array;
 
   /**
    * Get all termination logs.
