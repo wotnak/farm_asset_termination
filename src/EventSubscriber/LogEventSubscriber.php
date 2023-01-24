@@ -60,11 +60,6 @@ class LogEventSubscriber implements EventSubscriberInterface {
     // Get the log entity from the event.
     $log = $event->log;
 
-    // If log is not yet completed we heave nothing to do.
-    if ($log->get('status')->getString() !== 'done') {
-      return;
-    }
-
     // If log is not marked as termination we have nothing to do.
     if (
       $log->get('is_termination')->isEmpty()
@@ -76,6 +71,11 @@ class LogEventSubscriber implements EventSubscriberInterface {
     // Assign termination log category.
     if ($this->assetTermination->hasTerminationCategory()) {
       $this->assetTermination->assignTerminationCategory($log, save: FALSE);
+    }
+
+    // If log is not yet completed we heave nothing more to do.
+    if ($log->get('status')->getString() !== 'done') {
+      return;
     }
 
     // Get assets field from the log.
