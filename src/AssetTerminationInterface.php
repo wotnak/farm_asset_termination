@@ -18,6 +18,11 @@ interface AssetTerminationInterface {
   public const TERMINATION_LOG_FIELD = 'is_termination';
 
   /**
+   * Id of the module config.
+   */
+  public const CONFIG_ID = 'farm_asset_termination.settings';
+
+  /**
    * Assign 'Termination' category to given log(s).
    *
    * @param \Drupal\log\Entity\LogInterface[]|\Drupal\log\Entity\LogInterface $logs
@@ -32,7 +37,7 @@ interface AssetTerminationInterface {
   /**
    * Get 'Termination' log category term.
    */
-  public function getTerminationLogCategory(): TermInterface;
+  public function getTerminationLogCategory(): ?TermInterface;
 
   /**
    * Mark given logs as terminating assigned assets.
@@ -49,5 +54,10 @@ interface AssetTerminationInterface {
    *   Termination logs list.
    */
   public function getTerminationLogs(): array;
+
+  /**
+   * Checks if termination category was configured.
+   */
+  public function hasTerminationCategory(): bool;
 
 }

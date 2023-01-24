@@ -1,0 +1,3 @@
+farm_asset_termination:
+  config_permissions:
+    - administer farm_asset_termination

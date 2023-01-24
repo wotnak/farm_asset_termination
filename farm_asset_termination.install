@@ -7,29 +7,25 @@
 
 declare(strict_types=1);
 
-/**
- * Assign 'Termination' log category to existing termination logs.
- */
-function farm_asset_termination_update_9001(): void {
-  $terminationLogs = \Drupal::service('farm_asset_termination.asset_termination')->getTerminationLogs();
-  \Drupal::service('farm_asset_termination.asset_termination')->assignTerminationCategory($terminationLogs);
-}
+use Drupal\farm_asset_termination\AssetTerminationInterface;
 
 /**
- * Mark existing logs with 'Termination' category as termination.
+ * If 'Termination' log category exists assign it as category used for termination logs.
  */
-function farm_asset_termination_update_9002(): void {
-  // Try to find logs tagged with 'Termination' category.
-  $terminationCategoryId = \Drupal::service('farm_asset_termination.asset_termination')->getTerminationLogCategory()->id();
-  $query = \Drupal::entityTypeManager()->getStorage('log')->getQuery();
-  $query->condition('category', $terminationCategoryId);
-  $logsIds = $query->execute();
-  if (!is_array($logsIds) || empty($logsIds)) {
+function farm_asset_termination_update_9003(): void {
+  $terminationCategoryProperties = [
+    'name' => (string) \t('Termination'),
+    'vid' => 'log_category',
+  ];
+  $terminationCategory = \Drupal::entityTypeManager()
+    ->getStorage('taxonomy_term')
+    ->loadByProperties($terminationCategoryProperties);
+  if (empty($terminationCategory)) {
     return;
   }
+  $terminationCategoryId = key($terminationCategory);
 
-  // Mark found logs as terminating referenced assets.
-  /** @var \Drupal\log\Entity\LogInterface[] */
-  $logs = \Drupal::entityTypeManager()->getStorage('log')->loadMultiple($logsIds);
-  \Drupal::service('farm_asset_termination.asset_termination')->markLogsAsTermination($logs);
+  \Drupal::configFactory()->getEditable(AssetTerminationInterface::CONFIG_ID)
+    ->set('category', $terminationCategoryId)
+    ->save();
 }

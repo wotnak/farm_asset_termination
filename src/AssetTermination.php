@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\farm_asset_termination;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
@@ -23,14 +25,21 @@ class AssetTermination implements AssetTerminationInterface {
   protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
+   * The asset termination settings.
+   */
+  protected ImmutableConfig $config;
+
+  /**
    * Constructs a new AssetTermination object.
    */
   public function __construct(
     EntityTypeManagerInterface $entityTypeManager,
-    TranslationInterface $string_translation,
+    TranslationInterface $stringTranslation,
+    ConfigFactoryInterface $configFactory,
   ) {
     $this->entityTypeManager = $entityTypeManager;
-    $this->stringTranslation = $string_translation;
+    $this->stringTranslation = $stringTranslation;
+    $this->config = $configFactory->get(self::CONFIG_ID);
   }
 
   /**
@@ -42,6 +51,9 @@ class AssetTermination implements AssetTerminationInterface {
     }
 
     $terminationCategory = $this->getTerminationLogCategory();
+    if ($terminationCategory === NULL) {
+      return;
+    }
     foreach ($logs as $log) {
       $values = [];
       // Get existing log category field values.
@@ -66,20 +78,12 @@ class AssetTermination implements AssetTerminationInterface {
   /**
    * {@inheritdoc}
    */
-  public function getTerminationLogCategory(): TermInterface {
-    /** @var \Drupal\taxonomy\TermStorageInterface */
-    $termStorage = $this->entityTypeManager->getStorage('taxonomy_term');
-    $terminationCategoryProperties = [
-      'name' => (string) $this->t('Termination'),
-      'vid' => 'log_category',
-    ];
-    $terminationCategory = $termStorage->loadByProperties($terminationCategoryProperties);
-    if (!empty($terminationCategory)) {
-      return reset($terminationCategory);
+  public function getTerminationLogCategory(): ?TermInterface {
+    $categoryId = $this->config->get('category');
+    if (empty($categoryId)) {
+      return NULL;
     }
-    $terminationCategory = $termStorage->create($terminationCategoryProperties);
-    $terminationCategory->save();
-    return $terminationCategory;
+    return $this->entityTypeManager->getStorage('taxonomy_term')->load($categoryId);
   }
 
   /**
@@ -107,6 +111,13 @@ class AssetTermination implements AssetTerminationInterface {
     return $this->entityTypeManager->getStorage('log')->loadByProperties([
       self::TERMINATION_LOG_FIELD => TRUE,
     ]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function hasTerminationCategory(): bool {
+    return $this->getTerminationLogCategory() !== NULL;
   }
 
 }

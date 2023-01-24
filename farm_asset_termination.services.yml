@@ -2,7 +2,7 @@ services:
 
   farm_asset_termination.asset_termination:
     class: Drupal\farm_asset_termination\AssetTermination
-    arguments: ['@entity_type.manager', '@string_translation']
+    arguments: ['@entity_type.manager', '@string_translation', '@config.factory']
 
   farm_asset_termination.log_event_subscriber:
     class: Drupal\farm_asset_termination\EventSubscriber\LogEventSubscriber

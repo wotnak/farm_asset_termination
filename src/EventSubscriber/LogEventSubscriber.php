@@ -73,8 +73,10 @@ class LogEventSubscriber implements EventSubscriberInterface {
       return;
     }
 
-    // Assign 'Termination' log category.
-    $this->assetTermination->assignTerminationCategory($log, save: FALSE);
+    // Assign termination log category.
+    if ($this->assetTermination->hasTerminationCategory()) {
+      $this->assetTermination->assignTerminationCategory($log, save: FALSE);
+    }
 
     // Get assets field from the log.
     $assetsField = $log->get(self::LOG_FIELD_ASSET);

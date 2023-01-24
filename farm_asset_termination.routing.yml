@@ -1,0 +1,7 @@
+farm_asset_termination.settings:
+  path: 'farm/settings/termination'
+  defaults:
+    _form: '\Drupal\farm_asset_termination\Form\AssetTerminationSettingsForm'
+    _title: 'Asset Termination settings'
+  requirements:
+    _permission: 'administer farm_asset_termination'

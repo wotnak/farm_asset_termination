@@ -1,0 +1,5 @@
+farm_asset_termination.settings:
+  base_route: farm_settings.settings_page
+  route_name: farm_asset_termination.settings
+  title: 'Asset Termination'
+  weight: 10
