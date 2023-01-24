@@ -7,8 +7,11 @@
 
 declare(strict_types=1);
 
+use Drupal\Core\Entity\EntityFormInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\farm_asset_termination\Field\AssetTerminationItemList;
+use Drupal\log\Entity\LogInterface;
 
 /**
  * Implements hook_entity_base_field_info().
@@ -59,4 +62,22 @@ function farm_asset_termination_entity_base_field_info(EntityTypeInterface $enti
   }
 
   return $fields;
+}
+
+/**
+ * By default check 'Is termination' field for log types configured as termination by default.
+ */
+function farm_asset_termination_form_alter(array &$form, FormStateInterface $form_state): void {
+  $formObject = $form_state->getFormObject();
+  if (
+    !$formObject instanceof EntityFormInterface
+    || !$formObject->getEntity() instanceof LogInterface
+    || $formObject->getOperation() !== 'add'
+    || !isset($form['is_termination'])
+    || !\Drupal::service('farm_asset_termination.asset_termination')
+      ->isDefaultTerminationLogType($formObject->getEntity()->bundle())
+  ) {
+    return;
+  }
+  $form['is_termination']['widget']['value']['#default_value'] = TRUE;
 }

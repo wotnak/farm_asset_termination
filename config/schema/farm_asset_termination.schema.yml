@@ -5,3 +5,9 @@ farm_asset_termination.settings:
     category:
       type: string
       label: 'Termination category id'
+    default_termination_log_types:
+      type: sequence
+      label: 'Default termination log types'
+      sequence:
+        type: string
+        label: 'Log type id'

@@ -10,6 +10,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
 use Drupal\log\Entity\LogInterface;
+use Drupal\log\Entity\LogTypeInterface;
 use Drupal\taxonomy\TermInterface;
 
 /**
@@ -118,6 +119,20 @@ class AssetTermination implements AssetTerminationInterface {
    */
   public function hasTerminationCategory(): bool {
     return $this->getTerminationLogCategory() !== NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isDefaultTerminationLogType(LogTypeInterface|string $logType): bool {
+    if ($logType instanceof LogTypeInterface) {
+      $logType = strval($logType->id());
+    }
+    $defaultTerminationLogTypes = $this->config->get('default_termination_log_types');
+    if (!is_array($defaultTerminationLogTypes)) {
+      return FALSE;
+    }
+    return in_array($logType, $defaultTerminationLogTypes);
   }
 
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\farm_asset_termination;
 
 use Drupal\log\Entity\LogInterface;
+use Drupal\log\Entity\LogTypeInterface;
 use Drupal\taxonomy\TermInterface;
 
 /**
@@ -59,5 +60,10 @@ interface AssetTerminationInterface {
    * Checks if termination category was configured.
    */
   public function hasTerminationCategory(): bool;
+
+  /**
+   * Checks if given log type is by default treated as termination.
+   */
+  public function isDefaultTerminationLogType(LogTypeInterface|string $logType): bool;
 
 }

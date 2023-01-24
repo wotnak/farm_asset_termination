@@ -83,6 +83,19 @@ class AssetTerminationSettingsForm extends ConfigFormBase {
       '#empty_value' => '',
     ];
 
+    // Default termination log types
+    $logTypes = $this->entityTypeManager->getStorage('log_type')->loadMultiple();
+    $logTypesOptions = array_map(fn($logType) => $logType->label(), $logTypes);
+    $form['default_termination_log_types'] = [
+      '#type' => 'select',
+      '#multiple' => TRUE,
+      '#title' => $this->t('Default termination log types'),
+      '#description' => $this->t('Log types that will be marked as termination by default.'),
+      '#description_display' => 'before',
+      '#options' => $logTypesOptions,
+      '#default_value' => $config->get('default_termination_log_types'),
+    ];
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -92,6 +105,7 @@ class AssetTerminationSettingsForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state): void {
     $this->config(AssetTerminationInterface::CONFIG_ID)
       ->set('category', $form_state->getValue('category'))
+      ->set('default_termination_log_types', $form_state->getValue('default_termination_log_types', []))
       ->save();
     parent::submitForm($form, $form_state);
   }
