@@ -9,6 +9,13 @@ Logs marked as termination will on completion mark referenced assets as
 terminated and archive them. A terminated asset page will display
 the termination time linked to the log that terminated the asset.
 
+Optionally:
+
+- termination logs can be automatically marked with configured category,
+- configured asset types can by default be marked as termination,
+- existing logs with configured termination category can be automatically marked
+  as termination.
+
 Additionally all termination logs will have assigned 'Termination' log category
 for easier log filtering.
 
