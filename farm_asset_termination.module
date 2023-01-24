@@ -86,6 +86,7 @@ function farm_asset_termination_form_alter(array &$form, FormStateInterface $for
  * Implements callback_batch_operation().
  */
 function _farm_asset_termination_mark_as_termination(array $logIds, &$context = NULL): void {
+  /** @var \Drupal\log\Entity\LogInterface[] */
   $logs = \Drupal::entityTypeManager()->getStorage('log')->loadMultiple($logIds);
   $results = \Drupal::service('farm_asset_termination.asset_termination')->markLogsAsTermination($logs);
   $context['message'] = \t('Marking logs as termination...');

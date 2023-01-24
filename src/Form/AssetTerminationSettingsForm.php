@@ -76,7 +76,7 @@ class AssetTerminationSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state): array {
+  public function buildForm(array $form, FormStateInterface $formState): array {
     $config = $this->config(AssetTerminationInterface::CONFIG_ID);
 
     // Termination category.
@@ -104,7 +104,7 @@ class AssetTerminationSettingsForm extends ConfigFormBase {
       '#description_display' => 'before',
       '#options' => $logTypesOptions,
       '#default_value' => $config->get('default_termination_log_types'),
-    ]; 
+    ];
 
     // Mark all logs with termination category as termination logs.
     $form['mark_as_termination'] = [
@@ -115,30 +115,31 @@ class AssetTerminationSettingsForm extends ConfigFormBase {
     if (empty($config->get('category'))) {
       $form['mark_as_termination']['info'] = [
         '#type' => 'markup',
-        '#markup' => $this->t('To mark existing logs with termination category as termination you need to first configure a termination category.')
+        '#markup' => $this->t('To mark existing logs with termination category as termination you need to first configure a termination category.'),
       ];
     }
     else {
       $form['mark_as_termination']['batch'] = [
         '#type' => 'submit',
         '#value' => $this->t('Execute'),
-        '#name' => 'mark_as_termination'
+        '#name' => 'mark_as_termination',
       ];
     }
-    
 
-    return parent::buildForm($form, $form_state);
+    return parent::buildForm($form, $formState);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state): void {
+  public function validateForm(array &$form, FormStateInterface $formState): void {
     if (
-      $form_state->getTriggeringElement()['#name'] === 'mark_as_termination'
-      && empty($form_state->getValue('category'))
+      is_array($formState->getTriggeringElement())
+      && isset($formState->getTriggeringElement()['#name'])
+      && $formState->getTriggeringElement()['#name'] === 'mark_as_termination'
+      && empty($formState->getValue('category'))
     ) {
-      $form_state->setErrorByName(
+      $formState->setErrorByName(
         'category',
         $this->t('To mark existing logs with termination category as termination you need to first configure a termination category.')
       );
@@ -148,17 +149,21 @@ class AssetTerminationSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
+  public function submitForm(array &$form, FormStateInterface $formState): void {
 
     // Save config changes.
     $this->config(AssetTerminationInterface::CONFIG_ID)
-      ->set('category', $form_state->getValue('category'))
-      ->set('default_termination_log_types', $form_state->getValue('default_termination_log_types', []))
+      ->set('category', $formState->getValue('category'))
+      ->set('default_termination_log_types', $formState->getValue('default_termination_log_types', []))
       ->save();
-    parent::submitForm($form, $form_state);
+    parent::submitForm($form, $formState);
 
     // Mark all logs with termination category as termination logs.
-    if ($form_state->getTriggeringElement()['#name'] === 'mark_as_termination') {
+    if (
+      is_array($formState->getTriggeringElement())
+      && isset($formState->getTriggeringElement()['#name'])
+      && $formState->getTriggeringElement()['#name'] === 'mark_as_termination'
+    ) {
 
       $terminationCategory = $this->assetTermination->getTerminationLogCategory();
       if ($terminationCategory === NULL) {
