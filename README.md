@@ -18,9 +18,6 @@ Optionally:
 - existing logs of configured default termination log types can be automatically marked
   as termination.
 
-Additionally all termination logs will have assigned 'Termination' log category
-for easier log filtering.
-
 ## Installation
 
 Install as you would normally install a contributed drupal module. See:
