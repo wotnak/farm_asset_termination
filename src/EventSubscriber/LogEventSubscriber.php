@@ -97,12 +97,16 @@ class LogEventSubscriber implements EventSubscriberInterface {
       && $log->original->get('status')->getString() === 'done'
       && !$log->original->get(AssetTerminationInterface::TERMINATION_LOG_FIELD)->isEmpty()
       && boolval($log->original->get(AssetTerminationInterface::TERMINATION_LOG_FIELD)->getString())
+      && $log->original->get('timestamp')->getString() === $log->get('timestamp')->getString()
     ) {
       return;
     }
 
     // Archive assets referenced by termination log.
-    if ($this->assetTermination->shouldArchiveAssetsOnTerminationLogCompletion()) {
+    if (
+      $this->assetTermination->shouldArchiveAssetsOnTerminationLogCompletion()
+      && intval($log->get('timestamp')->getString()) <= time()
+    ) {
       /** @var \Drupal\asset\Entity\AssetInterface[] */
       $terminatedAssets = $assetsField->referencedEntities();
       foreach ($terminatedAssets as $asset) {
